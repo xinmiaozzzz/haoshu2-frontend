@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+html,body{background:transparent;margin:0;padding:0}
+.zj-root{width:100%;box-sizing:border-box;font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",sans-serif}
+.zj-root *{box-sizing:border-box;min-width:0}
+:root{
+  --bg:#15171c;--panel:#1c1f26;--panel2:#22262f;--border:rgba(255,255,255,0.08);
+  --accent:#c4485e;--accent-dim:rgba(196,72,94,0.14);--accent-line:rgba(196,72,94,0.35);
+  --cool:#5b8fa8;--cool-dim:rgba(91,143,168,0.14);
+  --good:#5a9e6f;--warn:#c99a3e;
+  --t1:#e8e6e2;--t2:#a8a5a0;--t3:#726f6a;--t4:#4d4b48;
+  --div:rgba(255,255,255,0.07);--div2:rgba(255,255,255,0.03);
+  --mono:"SFMono-Regular",Consolas,"Courier New",monospace
+}
+
+/* ---- 阶段转场 ---- */
+.stage-transition{position:relative;margin:0;padding:0;text-align:center;max-height:0;overflow:hidden;opacity:0;background:linear-gradient(90deg,transparent,var(--accent-dim),transparent);border-radius:12px;transition:max-height .6s ease,opacity .6s ease,padding .6s ease,margin .6s ease}
+.stage-transition.show{max-height:90px;opacity:1;padding:14px 0;margin-bottom:10px}
+.st-label{font-size:10px;letter-spacing:.28em;color:var(--t3);text-transform:uppercase;font-family:var(--mono)}
+.st-name{font-size:18px;font-weight:700;color:var(--accent);margin-top:5px;letter-spacing:.06em}
+.st-line{width:32px;height:1px;background:var(--accent-line);margin:7px auto;opacity:.7}
+
+/* ---- 顶部信息条 ---- */
+.zj-head{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.zj-head-dt{font-family:var(--mono);font-size:13px;color:var(--t1);font-weight:600}
+.zj-head-loc{font-size:11.5px;color:var(--t3);margin-top:2px}
+.zj-head-badge{font-size:8px;letter-spacing:2.5px;color:var(--t4);text-transform:uppercase;font-family:var(--mono)}
+
+/* ---- 知情追踪核心区块 ---- */
+.know-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:15px 16px 13px;margin-bottom:9px}
+.know-title{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.12em;color:var(--t3);text-transform:uppercase;font-family:var(--mono);margin-bottom:11px}
+.know-title .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 6px var(--accent)}
+.know-ladder{display:flex;align-items:center}
+.know-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;min-width:0}
+.know-step-line{position:absolute;top:5px;left:-50%;width:100%;height:2px;background:var(--div);z-index:0}
+.know-step:first-child .know-step-line{display:none}
+.know-step.done .know-step-line{background:var(--accent-line)}
+.know-step.current .know-step-line{background:linear-gradient(90deg,var(--accent-line),var(--div))}
+.know-step-dot{width:11px;height:11px;border-radius:50%;background:var(--panel2);border:2px solid var(--div);z-index:1;transition:all .3s ease}
+.know-step.done .know-step-dot{background:var(--accent-line);border-color:var(--accent-line)}
+.know-step.current .know-step-dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-dim);animation:know-pulse 2s ease-in-out infinite}
+@keyframes know-pulse{0%,100%{box-shadow:0 0 0 4px var(--accent-dim)}50%{box-shadow:0 0 0 7px rgba(196,72,94,0.05)}}
+.know-step-label{font-size:9px;color:var(--t4);margin-top:6px;text-align:center;line-height:1.3;max-width:100%}
+.know-step.current .know-step-label{color:var(--accent);font-weight:700}
+.know-step.done .know-step-label{color:var(--t3)}
+
+.strategy-banner{margin-top:12px;padding:9px 12px;border-radius:8px;border:1px solid var(--accent-line);background:var(--accent-dim);display:flex;align-items:center;gap:8px;font-size:12px}
+.strategy-banner .sl{color:var(--t3);font-size:10px;font-family:var(--mono)}
+.strategy-banner .sv{color:var(--accent);font-weight:700}
+
+/* ---- 正文 ---- */
+.mt-box{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:17px 18px;margin-bottom:9px}
+.mt-box p{margin:0 0 1em;font-size:14.5px;line-height:1.9;color:var(--t1);word-break:break-word}
+.mt-box p:last-child{margin-bottom:0}
+.mt-box .dialogue{color:var(--accent);font-weight:500}
+.mt-box .thought{color:var(--cool);font-style:italic}
+.mt-box p.godview{background:var(--accent-dim);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:9px 11px;margin:4px 0 1em}
+.godview-tag{display:block;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:var(--accent);margin-bottom:4px;text-transform:uppercase;font-family:var(--mono)}
+.mt-empty{color:var(--t3);font-size:13px;text-align:center;padding:10px 0}
+
+/* ---- 选项 ---- */
+.opt-box{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:9px;overflow:hidden}
+.opt-header{display:flex;align-items:center;gap:8px;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t2);user-select:none}
+.opt-header .car{margin-left:auto;color:var(--t4);font-size:11px;transition:transform .2s ease}
+.opt-box.open .opt-header .car{transform:rotate(90deg)}
+.opt-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.opt-box.open .opt-body{max-height:600px}
+.opt-list{padding:2px 13px 13px;display:flex;flex-direction:column;gap:7px}
+.opt-btn{width:100%;text-align:left;padding:10px 13px;border:1px solid var(--div);border-radius:9px;background:var(--div2);color:var(--t1);font-size:13px;line-height:1.5;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .1s ease}
+.opt-btn:hover{border-color:var(--accent-line);background:var(--accent-dim)}
+.opt-btn:active{transform:scale(.99)}
+
+/* ---- 左京个人状态 ---- */
+.self-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:9px;display:flex;flex-wrap:wrap;gap:8px}
+.self-tag{border:1px solid var(--div);border-radius:7px;padding:5px 10px;background:var(--panel2);font-size:11px;display:flex;align-items:center;gap:6px}
+.self-tag .l{color:var(--t4);font-size:9.5px;font-family:var(--mono)}
+.self-tag .v{color:var(--t1);font-weight:600}
+.self-gauge{display:flex;align-items:center;gap:7px;border:1px solid var(--div);border-radius:7px;padding:5px 10px;background:var(--panel2)}
+.self-gauge .l{color:var(--t4);font-size:9.5px;font-family:var(--mono)}
+.self-gauge-bar{width:52px;height:5px;border-radius:3px;background:var(--div);overflow:hidden}
+.self-gauge-fill{height:100%;background:var(--cool);border-radius:3px;transition:width .4s ease}
+.self-gauge .n{color:var(--t2);font-size:10.5px;font-family:var(--mono)}
+
+/* ---- 剧情阶段条 ---- */
+.plot-strip{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:11px 16px;margin-bottom:9px}
+.plot-timeline{display:flex;align-items:flex-start}
+.pt-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;min-width:0}
+.pt-line{position:absolute;top:3px;left:-50%;width:100%;height:2px;background:var(--div);z-index:0}
+.pt-step:first-child .pt-line{display:none}
+.pt-step.done .pt-line,.pt-step.current .pt-line{background:var(--cool)}
+.pt-dot{width:7px;height:7px;border-radius:50%;background:var(--div);z-index:1}
+.pt-step.done .pt-dot{background:var(--cool)}
+.pt-step.current .pt-dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.pt-label{font-size:8.5px;color:var(--t4);margin-top:5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pt-step.current .pt-label{color:var(--accent);font-weight:700}
+.pt-step.done .pt-label{color:var(--t3)}
+
+/* ---- 折叠胶囊（人物/暗线） ---- */
+.capsule{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:9px;overflow:hidden}
+.capsule-head{display:flex;align-items:center;gap:8px;padding:10px 15px;font-size:11.5px;font-weight:600;color:var(--t1);cursor:pointer;user-select:none}
+.capsule-head::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cool);flex-shrink:0}
+.capsule-head .car{margin-left:auto;color:var(--t4);font-size:10px;transition:transform .2s ease}
+.capsule.open .capsule-head .car{transform:rotate(90deg)}
+.capsule-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.capsule.roster-capsule.open .capsule-body{max-height:600px}
+.capsule.thread-capsule.open .capsule-body{max-height:220px}
+.notify-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:2px;flex-shrink:0;animation:pulse-dot 1.4s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+
+.roster{padding:2px 13px 10px;display:flex;flex-direction:column;gap:6px}
+.roster-row{border:1px solid var(--div);border-radius:9px;background:var(--div2);overflow:hidden}
+.roster-row-head{display:flex;align-items:center;gap:10px;padding:8px 10px}
+.roster-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--cool);background:var(--panel2);border:1px solid var(--div);flex-shrink:0}
+.roster-name{font-size:12px;font-weight:600;color:var(--t1)}
+.roster-rel{font-size:9.5px;color:var(--t4);margin-left:4px}
+.roster-status{font-size:10px;color:var(--t3);margin-top:2px;word-break:break-word;line-height:1.4}
+.roster-tag{font-size:8.5px;letter-spacing:.03em;padding:2px 7px;border-radius:99px;border:1px solid var(--div);white-space:nowrap;flex-shrink:0}
+.roster-tag.present{color:var(--good);border-color:rgba(90,158,111,0.4);background:rgba(90,158,111,0.08)}
+.roster-tag.absent{color:var(--t4)}
+
+.ledger{padding:2px 15px 12px}
+.ledger-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--div);font-size:11px}
+.ledger-row:last-child{border-bottom:none}
+.ledger-key{color:var(--t3)}
+.ledger-val{font-family:var(--mono);color:var(--t1);font-size:10.5px;text-align:right}
+.ledger-row.changed .ledger-val{color:var(--accent);font-weight:700}
+@keyframes row-flash{0%{background:var(--accent-dim)}100%{background:transparent}}
+.ledger-row.changed{animation:row-flash 2.2s ease-out 1}
+
+.npc-thoughts{border-left:2px solid var(--cool);padding:8px 10px;margin:0 0 9px;color:var(--t2);font-size:10.5px;line-height:1.75;background:var(--cool-dim);border-radius:0 6px 6px 0;display:none}
+.npc-thoughts .tn{color:var(--cool);font-weight:600}
+</style>
+</head>
+<body>
+<div class="zj-root" id="zj-root">
+
+  <div class="stage-transition" id="stage-transition">
+    <div class="st-line"></div>
+    <div class="st-label">阶段推进</div>
+    <div class="st-name" id="st-name"></div>
+    <div class="st-line"></div>
+  </div>
+
+  <div class="zj-head">
+    <div>
+      <div class="zj-head-dt" id="zj-dt">--/-- --:--</div>
+      <div class="zj-head-loc" id="zj-loc">--</div>
+    </div>
+    <div class="zj-head-badge">左京视角</div>
+  </div>
+
+  <div class="know-box">
+    <div class="know-title"><span class="dot"></span>知情追踪 · 郝叔与白颖</div>
+    <div class="know-ladder" id="know-ladder"></div>
+    <div class="strategy-banner" id="strategy-banner" style="display:none">
+      <span class="sl">应对策略</span><span class="sv" id="strategy-val"></span>
+    </div>
+  </div>
+
+  <div class="self-box" id="self-box"></div>
+
+  <div class="mt-box"><div id="mt-body"><div class="mt-empty">等待剧情生成……</div></div></div>
+
+  <div class="opt-box" id="opt-box">
+    <div class="opt-header" id="opt-header">选项<span class="car">›</span></div>
+    <div class="opt-body"><div class="opt-list" id="opt-list"></div></div>
+  </div>
+
+  <div class="plot-strip">
+    <div class="plot-timeline" id="plot-timeline"></div>
+  </div>
+
+  <div class="npc-thoughts" id="npc-thoughts"></div>
+
+  <div class="capsule roster-capsule" id="roster-capsule">
+    <div class="capsule-head">人物花名册<span class="car">›</span></div>
+    <div class="capsule-body"><div class="roster" id="roster"></div></div>
+  </div>
+
+  <div class="capsule thread-capsule" id="threads-capsule">
+    <div class="capsule-head">暗线<span class="notify-dot" id="threads-notify-dot" style="display:none"></span><span class="car">›</span></div>
+    <div class="capsule-body"><div class="ledger" id="ledger"></div></div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+try{
+
+  var CHAR_DEFS = [
+    {key:'李萱诗', rel:'母亲'},
+    {key:'郝江化', rel:'继父'},
+    {key:'白颖', rel:'妻子'},
+    {key:'郝小天', rel:'弟弟'}
+  ];
+
+  var KNOW_STAGES = ['无察觉','隐约怀疑','多次质疑被搪塞','亲眼撞见','彻底确认'];
+  var KNOW_SHORT = {'无察觉':'无察觉','隐约怀疑':'隐约怀疑','多次质疑被搪塞':'多次搪塞','亲眼撞见':'亲眼撞见','彻底确认':'彻底确认'};
+
+  var PLOT_STAGES = ['归国疑云','联合欺瞒','正面摊牌','摇摆坍塌','真相大白与决裂'];
+  var PLOT_SHORT = {'归国疑云':'归国疑云','联合欺瞒':'联合欺瞒','正面摊牌':'正面摊牌','摇摆坍塌':'摇摆坍塌','真相大白与决裂':'决裂'};
+
+  var lastRawText = '';
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  var GODVIEW_RE = /^[\[［]玩家可见[\]］]\s*/;
+
+  function renderMainText(text){
+    var box = document.getElementById('mt-body');
+    if(!text){ box.innerHTML = '<div class="mt-empty">等待剧情生成……</div>'; return; }
+    var html = text.split(/\n+/).map(function(s){ return s.trim(); }).filter(Boolean).map(function(p){
+      var isGodview = GODVIEW_RE.test(p);
+      var colored = esc(p.replace(GODVIEW_RE, ''))
+        .replace(/"([^"]*)"/g, '<span class="dialogue">"$1"</span>')
+        .replace(/《([^》]*)》/g, '<span class="thought">$1</span>');
+      if(isGodview){ return '<p class="godview"><span class="godview-tag">玩家可见</span>' + colored + '</p>'; }
+      return '<p>' + colored + '</p>';
+    }).join('');
+    box.innerHTML = html || '<div class="mt-empty">等待剧情生成……</div>';
+  }
+
+  function sendToInput(text){
+    var cmd = '/setinput ' + String(text).replace(/[\r\n]+/g, ' ');
+    try{
+      if(typeof triggerSlash === 'function'){ triggerSlash(cmd); return; }
+      if(typeof executeSlashCommandsWithOptions === 'function'){ executeSlashCommandsWithOptions(cmd); return; }
+      if(typeof executeSlashCommands === 'function'){ executeSlashCommands(cmd); return; }
+    }catch(e){ console.error('[左京状态栏] 发送输入框失败', e); }
+  }
+
+  function renderOptions(options){
+    var list = document.getElementById('opt-list');
+    list.innerHTML = '';
+    options.forEach(function(opt){
+      var payload = opt.replace(/^\d+[\.\、]\s*/, '');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'opt-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', function(){ sendToInput(payload); });
+      list.appendChild(btn);
+    });
+  }
+
+  function renderLadder(containerId, stages, shortMap, currentStage, small){
+    var el = document.getElementById(containerId);
+    var idx = stages.indexOf(currentStage);
+    var dotClass = small ? 'pt-dot' : 'know-step-dot';
+    var lineClass = small ? 'pt-line' : 'know-step-line';
+    var labelClass = small ? 'pt-label' : 'know-step-label';
+    var stepClass = small ? 'pt-step' : 'know-step';
+    el.innerHTML = stages.map(function(s, i){
+      var cls = i === idx ? 'current' : (idx !== -1 && i < idx ? 'done' : '');
+      return '<div class="' + stepClass + ' ' + cls + '">' +
+        '<div class="' + lineClass + '"></div>' +
+        '<div class="' + dotClass + '"></div>' +
+        '<div class="' + labelClass + '">' + esc((shortMap && shortMap[s]) || s) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var stageTransitionChecked = false;
+
+  function checkStageTransition(messageId, currentStage){
+    if(stageTransitionChecked) return;
+    stageTransitionChecked = true;
+    if(!currentStage || messageId === undefined || messageId === null || messageId <= 0) return;
+    try{
+      var prevData = Mvu.getMvuData({ type: 'message', message_id: messageId - 1 });
+      var prevStat = prevData && prevData.stat_data;
+      var prevStage = prevStat && prevStat['剧情'] && prevStat['剧情']['当前阶段'];
+      if(prevStage && prevStage !== currentStage){
+        var el = document.getElementById('stage-transition');
+        var nameEl = document.getElementById('st-name');
+        if(el && nameEl){
+          nameEl.textContent = currentStage;
+          el.classList.add('show');
+          setTimeout(function(){ el.classList.remove('show'); }, 4200);
+        }
+      }
+    }catch(e){ /* 上一条消息没有MVU数据可比较时静默跳过 */ }
+  }
+
+  function renderHead(sys){
+    sys = sys || {};
+    document.getElementById('zj-dt').textContent = (sys['日期'] || '--') + ' ' + (sys['时间'] || '--');
+    document.getElementById('zj-loc').textContent = sys['当前地点'] || '--';
+  }
+
+  function renderKnowledge(know){
+    know = know || {};
+    renderLadder('know-ladder', KNOW_STAGES, KNOW_SHORT, know['阶段'], false);
+  }
+
+  function renderStrategy(zj){
+    zj = zj || {};
+    var banner = document.getElementById('strategy-banner');
+    var val = zj['应对策略'];
+    if(!val || val === '未决定'){ banner.style.display = 'none'; return; }
+    banner.style.display = '';
+    document.getElementById('strategy-val').textContent = val;
+  }
+
+  function renderSelf(zj){
+    zj = zj || {};
+    var box = document.getElementById('self-box');
+    var favor = zj['对母亲好感度'];
+    var parts = [];
+    if(favor !== undefined && favor !== null){
+      var n = Math.max(0, Math.min(100, Number(favor) || 0));
+      parts.push('<div class="self-gauge"><span class="l">对母亲</span><div class="self-gauge-bar"><div class="self-gauge-fill" style="width:' + n + '%"></div></div><span class="n">' + esc(favor) + '</span></div>');
+    }
+    if(zj['对郝叔态度']){
+      parts.push('<div class="self-tag"><span class="l">对郝叔</span><span class="v">' + esc(zj['对郝叔态度']) + '</span></div>');
+    }
+    if(zj['与白颖关系']){
+      parts.push('<div class="self-tag"><span class="l">对白颖</span><span class="v">' + esc(zj['与白颖关系']) + '</span></div>');
+    }
+    box.innerHTML = parts.join('');
+  }
+
+  function renderPlotStrip(plot){
+    plot = plot || {};
+    renderLadder('plot-timeline', PLOT_STAGES, PLOT_SHORT, plot['当前阶段'], true);
+  }
+
+  function renderRoster(scene){
+    scene = scene || {};
+    var root = document.getElementById('roster');
+    var presentNames = String(scene['在场人物'] || '').split(/[,，、\s]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+    var items = CHAR_DEFS.map(function(def, i){
+      var raw = scene[def.key + '状态'];
+      var hasState = raw !== undefined && raw !== null && String(raw).trim() !== '' && String(raw).trim() !== '不在场';
+      var present = hasState && presentNames.indexOf(def.key) !== -1;
+      return { def: def, i: i, status: present ? String(raw).trim() : '', present: present };
+    });
+    items.sort(function(a, b){ return (b.present ? 1 : 0) - (a.present ? 1 : 0); });
+    root.innerHTML = items.map(function(item){
+      var def = item.def;
+      return '' +
+        '<div class="roster-row">' +
+          '<div class="roster-row-head">' +
+            '<div class="roster-avatar">' + esc(def.key.slice(0,1)) + '</div>' +
+            '<div style="flex:1">' +
+              '<span class="roster-name">' + esc(def.key) + '</span><span class="roster-rel">· ' + esc(def.rel) + '</span>' +
+              (item.present ? '<div class="roster-status">' + esc(item.status) + '</div>' : '') +
+            '</div>' +
+            '<span class="roster-tag ' + (item.present?'present':'absent') + '">' + (item.present?'在场':'不在场') + '</span>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  var lastDarkSnapshot = null;
+  var hasUnseenDarkChange = false;
+
+  function renderThreads(dark){
+    dark = dark || {};
+    var rows = [
+      {k:'左京与徐琳', v: dark['左京与徐琳']}
+    ];
+    var visible = rows.filter(function(r){ return r.v !== undefined && r.v !== null && r.v !== ''; });
+    var html = visible.map(function(r){
+      var changed = lastDarkSnapshot && lastDarkSnapshot[r.k] !== undefined && lastDarkSnapshot[r.k] !== r.v;
+      if(changed) hasUnseenDarkChange = true;
+      return '<div class="ledger-row' + (changed ? ' changed' : '') + '"><span class="ledger-key">'+esc(r.k)+'</span><span class="ledger-val">'+esc(r.v)+'</span></div>';
+    }).join('');
+    document.getElementById('ledger').innerHTML = html || '<div class="mt-empty" style="padding:14px 0">暂无记录</div>';
+
+    var snap = {};
+    visible.forEach(function(r){ snap[r.k] = r.v; });
+    lastDarkSnapshot = snap;
+
+    var dot = document.getElementById('threads-notify-dot');
+    var capsule = document.getElementById('threads-capsule');
+    if(dot) dot.style.display = (hasUnseenDarkChange && capsule && !capsule.classList.contains('open')) ? '' : 'none';
+  }
+
+  function renderThoughts(scene){
+    scene = scene || {};
+    var raw = scene['NPC内心'] || '';
+    var lines = String(raw).split(/\n+/).map(function(s){ return s.trim(); }).filter(Boolean);
+    var box = document.getElementById('npc-thoughts');
+    if(!lines.length){ box.innerHTML = ''; box.style.display = 'none'; return; }
+    box.style.display = '';
+    box.innerHTML = lines.map(function(line, i){
+      var idx = line.indexOf('：');
+      if(idx === -1) idx = line.indexOf(':');
+      var name = idx === -1 ? '' : line.slice(0, idx);
+      var content = idx === -1 ? line : line.slice(idx + 1);
+      return '<div' + (i>0?' style="margin-top:4px"':'') + '><span class="tn">' + esc(name) + '</span> ' + esc(content) + '</div>';
+    }).join('');
+  }
+
+  function extractLastTag(rawText, tag){
+    var openTag = '<' + tag + '>';
+    var closeTag = '</' + tag + '>';
+    var closeIdx = rawText.lastIndexOf(closeTag);
+    if(closeIdx === -1) return '';
+    var openIdx = rawText.lastIndexOf(openTag, closeIdx);
+    if(openIdx === -1) return '';
+    return rawText.slice(openIdx + openTag.length, closeIdx).trim();
+  }
+
+  async function updateDisplay(){
+    var messageId = getCurrentMessageId();
+    var messages = getChatMessages(messageId);
+    var rawText = (messages && messages[0] && messages[0].message) || '';
+
+    var mainTextFound = extractLastTag(rawText, 'maintext') || extractLastTag(rawText, 'game');
+    var optionBlockFound = extractLastTag(rawText, 'option');
+
+    if(rawText === lastRawText) return;
+    lastRawText = rawText;
+
+    renderMainText(mainTextFound);
+    var options = optionBlockFound ? optionBlockFound.split('\n').map(function(s){ return s.trim(); }).filter(Boolean) : [];
+    renderOptions(options);
+
+    try{
+      var mvuData = Mvu.getMvuData({ type: 'message', message_id: messageId });
+      var stat = (mvuData && mvuData.stat_data) || {};
+      checkStageTransition(messageId, stat['剧情'] && stat['剧情']['当前阶段']);
+      renderHead(stat['系统']);
+      renderKnowledge(stat['知情_郝叔白颖']);
+      renderStrategy(stat['左京']);
+      renderSelf(stat['左京']);
+      renderPlotStrip(stat['剧情']);
+      renderRoster(stat['场景']);
+      renderThreads(stat['暗线']);
+      renderThoughts(stat['场景']);
+    }catch(e){
+      console.error('[左京状态栏] 读取 MVU 数据失败', e);
+    }
+  }
+
+  var optHeaderEl = document.getElementById('opt-header');
+  if(optHeaderEl){
+    optHeaderEl.addEventListener('click', function(){
+      var box = document.getElementById('opt-box');
+      if(box) box.classList.toggle('open');
+    });
+  }
+  document.querySelectorAll('.capsule-head').forEach(function(head){
+    head.addEventListener('click', function(){
+      var cap = head.closest('.capsule');
+      if(cap && cap.id === 'threads-capsule' && !cap.classList.contains('open')){
+        hasUnseenDarkChange = false;
+        var dot = document.getElementById('threads-notify-dot');
+        if(dot) dot.style.display = 'none';
+      }
+      if(cap) cap.classList.toggle('open');
+    });
+  });
+
+  (async function(){
+    try{
+      if(typeof waitGlobalInitialized === 'function'){
+        await Promise.race([
+          waitGlobalInitialized('Mvu'),
+          new Promise(function(resolve){ setTimeout(resolve, 3000); })
+        ]);
+      }
+    }catch(e){ console.error('[左京状态栏] 等待 Mvu 初始化失败', e); }
+    try{ await updateDisplay(); }catch(e){ console.error('[左京状态栏] 首次渲染失败', e); }
+    setInterval(function(){
+      updateDisplay().catch(function(e){ console.error('[左京状态栏] 轮询渲染失败', e); });
+    }, 1000);
+  })();
+
+}catch(_eTop){
+  console.error('[左京状态栏] 顶层脚本错误', _eTop);
+}
+})();
+</script>
+</body>
+</html>
