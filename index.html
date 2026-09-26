@@ -416,7 +416,7 @@ try{
     var messages = getChatMessages(messageId);
     var rawText = (messages && messages[0] && messages[0].message) || '';
 
-    var mainTextFound = extractLastTag(rawText, 'maintext') || extractLastTag(rawText, 'game');
+    var mainTextFound = extractLastTag(rawText, 'maintext') || extractLastTag(rawText, 'game') || extractLastTag(rawText, 'content');
     var optionBlockFound = extractLastTag(rawText, 'option');
 
     if(rawText === lastRawText) return;
